@@ -3,13 +3,17 @@
 #include <queue>
 #include <vector>
 #include <cstdlib>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <map>
 using namespace std;
 //МАССИВ
 struct Numbers //Сам массив (его составляющие)
 {
     int* num;
     int size;
-    int C;
+    int C = 15;
 };
 void createMas(Numbers& A, int C) { //Создать массив
     A.num = new int[C];
@@ -17,8 +21,8 @@ void createMas(Numbers& A, int C) { //Создать массив
     A.C = C;
 }
 void addMasAtInd(Numbers& A, int ind, int znach) { //Добавить элемент по индексу
-    if (ind >= A.C) {
-        cout << "Индекс вне диапазона емкости массива.\n";
+    if (ind >= A.C || ind <0) {
+        cout << "Индекс вне диапазона емкости массива." << endl;
         return;
     }
     if (ind >= A.size) {
@@ -35,14 +39,14 @@ void addMasAtEnd(Numbers& A, int znach) { //Добавить в конец
     A.size++;
 }
 void poiskMasPoInd(Numbers& A, int ind) { //Получение по индексу
-    if (ind <0 || ind > A.size) {
+    if (ind >=0 || ind < A.size) {
         cout << "Выход за границы массива." << endl;
         return;
     }
     else cout << A.num[ind] << endl;
 }
 void deleteMasPoInd(Numbers& A, int ind) { //Удалить по индексу
-    if (ind <=0 || ind > A.size) {
+    if (ind >=0 || ind < A.size) {
         cout << "Элемента за границами массива быть не может." << endl;
         return;
     }
@@ -85,7 +89,7 @@ struct Spisok //Сам односвязный список (его состав�
 };
 void CreateList(Spisok*& List, string str) //Создание
 {
-    List = new Spisok{ "Лунтик", nullptr };
+    List = new Spisok{ str, nullptr };
 }
 void AddChelPosle(Spisok* ptr, string str) //Добавить человека в односвязный список после ptr
 {
@@ -95,6 +99,11 @@ void AddChelPosle(Spisok* ptr, string str) //Добавить человека �
     ptr->place = element;
 }
 void AddChelDo(Spisok*& head, Spisok* ptr, string str) {//Добавить человека в односвязный список до ptr
+    if (head == nullptr || ptr == nullptr)
+    {
+        cout << "Элемент не найден" << endl;
+        return;
+    }
     Spisok* element = new Spisok;
     element->name = str;
     if (head == ptr){
@@ -120,6 +129,10 @@ void AddToEnd(Spisok*& ptr, string n) //Добавить в конец одно�
     Spisok* element = new Spisok;
     element->name = n;
     element->place = nullptr;
+    if (ptr == nullptr) {
+        ptr = element;
+        return;
+    }
     Spisok* temp = ptr;
     while (temp->place != nullptr){
         temp = temp->place;
@@ -167,8 +180,14 @@ bool poisk(Spisok* ptr, string str){ //Поиск элемента по знач
     return false;
 }
 void deletePoZnach(Spisok*& ptr, string str){ //Удаление по значению
-    if (ptr == nullptr) return;
-    if(!poisk(ptr, str)) cout << "Нельзя удалить несуществующий элемент" << endl;
+    if (ptr == nullptr) { 
+        cout << "Элемент не найден" << endl;
+        return;
+    }
+    if (!poisk(ptr, str)) {
+        cout << "Нельзя удалить несуществующий элемент" << endl;
+        return;
+    }
     else {
         Spisok* element = ptr;
         Spisok* prev = nullptr;
@@ -184,6 +203,7 @@ void deletePoZnach(Spisok*& ptr, string str){ //Удаление по значе
         }
         delete element;
     }
+    return;
 }
 void deleteToBegin(Spisok*& ptr) //Удалить начало односвязного списка
 {
@@ -221,7 +241,11 @@ Spisok* FindElement(Spisok* ptr, string str) { //Поиск элемента (в
     return nullptr;
 }
 void deleteChelDo(Spisok*& ptr, Spisok* target) { //Удалить до заданного значения
-    if (ptr == nullptr || target == nullptr) return;
+    if (ptr == nullptr || ptr == nullptr)
+    {
+        cout << "Элемент не найден" << endl;
+        return;
+    }
     if (ptr == target) return;
     Spisok* prevPrev = nullptr;
     Spisok* prev = ptr;    
@@ -249,13 +273,16 @@ void deleteChelPosle(Spisok* ptr) {// Удаляет после заданног
     ptr->place = element->place;
     delete element;
 }
-
 //ДВУСВЯЗНЫЙ СПИСОК
 struct Group {
     string student;  // студент 
     Group* next;  // указатель на следующий элемент  
     Group* last;  // указатель на предыдущий элемент  
 };
+void CreateGroup(Group*& List, string str) //Создание
+{
+    List = new Group{ str, nullptr };
+}
 void AddStudPosle(Group* ptr, string n) {
     Group* element = new Group;
     element->student = n;
@@ -305,7 +332,6 @@ void AddToStart(Group*& head, string n) {
     }
     head = newNode;
 }
-
 // Добавление в конец списка
 void AddToEnd(Group*& head, string n) {
     Group* newNode = new Group;
@@ -323,7 +349,6 @@ void AddToEnd(Group*& head, string n) {
     temp->next = newNode;
     newNode->last = temp;
 }
-
 // Удаление из начала списка
 void DeleteFromStart(Group*& head) {
     if (head == nullptr) return;
@@ -334,7 +359,6 @@ void DeleteFromStart(Group*& head) {
     }
     delete temp;
 }
-
 // Удаление из конца списка
 void DeleteFromEnd(Group*& head) {
     if (head == nullptr) return;
@@ -374,6 +398,30 @@ bool poiskGroup(Group* ptr, string str) { //Поиск элемента по з�
     }
     return false;
 }
+void deleteStudByValue(Group*& head, const string& str) {
+    if (head == nullptr) return;
+    Group* current = head;
+    if (current->student == str) {
+        DeleteFromStart(head);
+        return;
+    }
+    while (current != nullptr && current->student != str) {
+        current = current->next;
+    }
+    if (current == nullptr) {
+        return;
+    }
+    if (current->last != nullptr) {
+        current->last->next = current->next;
+    }
+    if (current->next != nullptr) {
+        current->next->last = current->last;
+    }
+    delete current;
+}
+
+
+
 //СТЕК
 struct Garden {
     string item;  // еда 
@@ -399,44 +447,308 @@ void readStack(Garden* ptr) {
     cout << ptr->item << " ";
     readStack(ptr->point);
 }
+string popStack(Garden*& ptr) {
+    if (ptr == nullptr) {
+        return "STACK_EMPTY";
+    }
+    string item = ptr->item;
+    Garden* temp = ptr;
+    ptr = ptr->point;
+    delete temp;
+    return item;
+}
+
 
 //ОЧЕРЕДЬ
 struct Toys {
-    string toy;  // еда 
-    Toys* site;  // указатель на следующий элемент   
+    string toy;
+    Toys* site;
 };
-void addQueue(Toys*& ptr, string str) //Функция добавления в очередь
-{
+void addQueue(Toys*& ptr, string str) {
     Toys* element = new Toys;
     element->toy = str;
-    element->site = ptr;
-    ptr = element;
+    element->site = nullptr;
+    if (ptr == nullptr) {
+        ptr = element;
+    }
+    else {
+        Toys* temp = ptr;
+        while (temp->site != nullptr) {
+            temp = temp->site;
+        }
+        temp->site = element;
+    }
 }
-void deleteQueue(Toys*& ptr) //Функция удаления из очереди - удаляет самый верхний - последний вставленный
-{
-    if (ptr == nullptr) return;
-    if (ptr->site == nullptr) {
-        delete ptr;
-        ptr = nullptr;
+void deleteQueue(Toys*& ptr) {
+    if (ptr == nullptr) {
+        cout << "Очередь пуста" << endl;
         return;
     }
     Toys* temp = ptr;
-    while (temp->site->site != nullptr) {
-        temp = temp->site;
-    }
-    delete temp->site;
-    temp->site = nullptr;
+    ptr = ptr->site;
+    delete temp;
 }
-void readQueue(Toys*& ptr) //Чтение стека - начинаем с верхнего элемента, читаем его, затем удаляем и переходим к следующему
-{
+
+// Извлечение элемента из очереди с возвратом значения
+string QPOP(Toys*& ptr) {
+    if (ptr == nullptr) {
+        return "QUEUE_EMPTY";
+    }
+    Toys* temp = ptr;
+    string item = temp->toy;
+    ptr = ptr->site;
+    delete temp;
+    return item;
+}
+void readQueue(Toys* ptr) {
+    if (ptr == nullptr) {
+        cout << "Очередь пуста" << endl;
+        return;
+    }
+
+    Toys* current = ptr;
+    while (current != nullptr) {
+        cout << current->toy << " ";
+        current = current->site;
+    }
+    cout << endl;
+}
+void readQueueRecursive(Toys* ptr) {
     if (ptr == nullptr) {
         return;
     }
-    readQueue(ptr->site);
     cout << ptr->toy << " ";
+    readQueueRecursive(ptr->site);
+}
+map<string, Garden*> stacks;
+map<string, Toys*> queues;
+void saveToFile(const string& filename) {
+    ofstream file(filename);
+
+    // Сохраняем стеки
+    for (const auto& pair : stacks) {
+        file << "STACK " << pair.first << " ";
+        Garden* current = pair.second;
+        while (current != nullptr) {
+            file << current->item << " ";
+            current = current->point;
+        }
+        file << "END_STACK" << endl;
+    }
+
+    // Сохраняем очереди
+    for (const auto& pair : queues) {
+        file << "QUEUE " << pair.first << " ";
+        Toys* current = pair.second;
+        while (current != nullptr) {
+            file << current->toy << " ";
+            current = current->site;
+        }
+        file << "END_QUEUE" << endl;
+    }
+
+    file.close();
+}
+void loadFromFile(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        return;
+    }
+
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
+        string type, name;
+        ss >> type >> name;
+
+        if (type == "STACK") {
+            string item;
+            Garden* stack = nullptr;
+            while (ss >> item && item != "END_STACK") {
+                addStack(stack, item);
+            }
+            stacks[name] = stack;
+        }
+        else if (type == "QUEUE") {
+            string item;
+            Toys* queue = nullptr;
+            while (ss >> item && item != "END_QUEUE") {
+                addQueue(queue, item);
+            }
+            queues[name] = queue;
+        }
+    }
+
+    file.close();
 }
 
-//КРАСНО-ЧЕРНОЕ ДЕРЕВО
+// Функции для обработки запросов
+void processSPUSH(const string& stackName, const string& item) {
+    addStack(stacks[stackName], item);
+    cout << item << endl;
+}
+
+void processSPOP(const string& stackName) {
+    string result = popStack(stacks[stackName]);
+    cout << result << endl;
+}
+
+void processQPUSH(const string& queueName, const string& item) {
+    addQueue(queues[queueName], item);
+    cout << item << endl;
+}
+
+void processQPOP(const string& queueName) {
+    string result = QPOP(queues[queueName]);
+    cout << result << endl;
+}
+
+// Парсинг аргументов командной строки
+void parseArguments(int argc, char* argv[], string& filename, string& query) {
+    for (int i = 1; i < argc; i++) {
+        string arg = argv[i];
+        if (arg == "--file" && i + 1 < argc) {
+            filename = argv[++i];
+        }
+        else if (arg == "--query" && i + 1 < argc) {
+            query = argv[++i];
+        }
+    }
+}
+
+// Парсинг запроса
+void parseQuery(const string& query) {
+    stringstream ss(query);
+    string command, name, item;
+
+    ss >> command >> name;
+
+    if (command == "SPUSH") {
+        // Остальная часть - это item
+        getline(ss, item);
+        // Убираем начальный пробел
+        if (!item.empty() && item[0] == ' ') {
+            item = item.substr(1);
+        }
+        processSPUSH(name, item);
+    }
+    else if (command == "SPOP") {
+        processSPOP(name);
+    }
+    else if (command == "QPUSH") {
+        getline(ss, item);
+        if (!item.empty() && item[0] == ' ') {
+            item = item.substr(1);
+        }
+        processQPUSH(name, item);
+    }
+    else if (command == "QPOP") {
+        processQPOP(name);
+    }
+    else {
+        cout << "UNKNOWN_COMMAND" << endl;
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    string input;
+    cout << "Введите команду: ";
+    getline(cin, input);
+    // Парсим введенную строку
+    string filename, query;
+    size_t filePos = input.find("--file");
+    size_t queryPos = input.find("--query");
+    if (filePos != string::npos && queryPos != string::npos) {
+        // Извлекаем имя файла
+        size_t fileStart = filePos + 6; // длина "--file"
+        size_t fileEnd = input.find(" ", fileStart);
+        filename = input.substr(fileStart, fileEnd - fileStart);
+        // Извлекаем запрос (убираем кавычки если есть)
+        size_t queryStart = queryPos + 7; // длина "--query"
+        string rawQuery = input.substr(queryStart);
+        if (!rawQuery.empty() && rawQuery[0] == '\'') {
+            query = rawQuery.substr(1, rawQuery.length() - 2); // убираем кавычки
+        }
+        else {
+            query = rawQuery;
+        }
+    }
+    if (filename.empty() || query.empty()) {
+        cout << "Ошибка: необходимо указать --file и --query" << endl;
+        cout << "Пример: --file data.txt --query 'SPUSH mystack item'" << endl;
+        return 1;
+    }
+    // Загружаем данные из файла
+    loadFromFile(filename);
+    // Обрабатываем запрос
+    parseQuery(query);
+    // Сохраняем данные в файл
+    saveToFile(filename);
+}
+/*
+    //ДЕРЕВО
+    Tree* MyTree = nullptr;
+    MyTree = AddLeaf(MyTree, 15);
+    MyTree = AddLeaf(MyTree, 7);
+    MyTree = AddLeaf(MyTree, 11);
+    MyTree = AddLeaf(MyTree, 13);
+    MyTree = AddLeaf(MyTree, 9);
+    MyTree = AddLeaf(MyTree, 14);
+    MyTree = AddLeaf(MyTree, 20);
+    MyTree = AddLeaf(MyTree, 25);
+    MyTree = AddLeaf(MyTree, 26);
+    MyTree = AddLeaf(MyTree, 30);
+    MyTree = AddLeaf(MyTree, 35);
+    deleteLeaf(MyTree, 13);
+    deleteLeaf(MyTree, 11);
+    BFS(MyTree);
+    //Односвязный список
+    Spisok* List = nullptr;
+    CreateList(List, "Лунтик");
+    List->place = new Spisok{ "Кузя", nullptr };
+    AddChelPosle(List->place, "Корней_Корнеевич");
+    AddChelDo(List, List, "Дядя_Шнюк");
+    AddToEnd(List, "Мила");
+    AddToBegin(List, "Бабочка");
+    cout << poisk(List, "Пупсень") << endl;
+    print(List);
+    otherPrint(List);
+    cout << endl;
+    deletePoZnach(List, "Пупсень");
+    deletePoZnach(List, "Мила");
+    print(List);
+    deleteToBegin(List);
+    print(List);
+    deleteToEnd(List);
+    Spisok* element = FindElement(List, "Лунтик");
+    deleteChelDo(List, element);
+    deleteChelPosle(element);
+    print(List);
+    //Стек
+    Garden* MyGarden = nullptr;
+    addStack(MyGarden, "Груша");
+    addStack(MyGarden, "Морковь");
+    addStack(MyGarden, "Банан");
+    readStack(MyGarden);
+    cout << endl;
+    deleteStack(MyGarden);//удаляем элемент
+    readStack(MyGarden);
+    cout << endl;
+    //Очередь
+    Toys* MyBox = nullptr;//Создание стеков
+    addQueue(MyBox, "Юла");//Добавление в стек элемента
+    addQueue(MyBox, "Кубики");
+    addQueue(MyBox, "Кукла");
+    addQueue(MyBox, "Лего");
+    readQueue(MyBox);//выводим
+    cout << endl;
+    deleteQueue(MyBox);//удаляем элемент
+    readQueue(MyBox);
+    cout << endl;
+    */
+
+    //КРАСНО-ЧЕРНОЕ ДЕРЕВО
 enum Color { RED, BLACK }; // 2 цвета
 struct Tree //составляющие дерева
 {
@@ -767,72 +1079,6 @@ void fromBottomToTop(Tree* root) {
     fromBottomToTop(root->right);
     cout << root->value << (root->color == RED ? "r" : "b") << " ";
 }
-int main()
-{
-    setlocale(LC_ALL, "rus");
-    //ДЕРЕВО
-    Tree* MyTree = nullptr;
-    MyTree = AddLeaf(MyTree, 15);
-    MyTree = AddLeaf(MyTree, 7);
-    MyTree = AddLeaf(MyTree, 11);
-    MyTree = AddLeaf(MyTree, 13);
-    MyTree = AddLeaf(MyTree, 9);
-    MyTree = AddLeaf(MyTree, 14);
-    MyTree = AddLeaf(MyTree, 20);
-    MyTree = AddLeaf(MyTree, 25);
-    MyTree = AddLeaf(MyTree, 26);
-    MyTree = AddLeaf(MyTree, 30);
-    MyTree = AddLeaf(MyTree, 35);
-    deleteLeaf(MyTree, 13);
-    deleteLeaf(MyTree, 11);
-    BFS(MyTree);
-    /*
-    //Односвязный список
-    Spisok* List = nullptr;
-    CreateList(List, "Лунтик");
-    List->place = new Spisok{ "Кузя", nullptr };
-    AddChelPosle(List->place, "Корней_Корнеевич");
-    AddChelDo(List, List, "Дядя_Шнюк");
-    AddToEnd(List, "Мила");
-    AddToBegin(List, "Бабочка");
-    cout << poisk(List, "Пупсень") << endl;
-    print(List);
-    otherPrint(List);
-    cout << endl;
-    deletePoZnach(List, "Пупсень");
-    deletePoZnach(List, "Мила");
-    print(List);
-    deleteToBegin(List);
-    print(List);
-    deleteToEnd(List);
-    Spisok* element = FindElement(List, "Лунтик");
-    deleteChelDo(List, element);
-    deleteChelPosle(element);
-    print(List);
-    //Стек
-    Garden* MyGarden = nullptr;
-    addStack(MyGarden, "Груша");
-    addStack(MyGarden, "Морковь");
-    addStack(MyGarden, "Банан");
-    readStack(MyGarden);
-    cout << endl;
-    deleteStack(MyGarden);//удаляем элемент
-    readStack(MyGarden);
-    cout << endl;
-    //Очередь
-    Toys* MyBox = nullptr;//Создание стеков
-    addQueue(MyBox, "Юла");//Добавление в стек элемента
-    addQueue(MyBox, "Кубики");
-    addQueue(MyBox, "Кукла");
-    addQueue(MyBox, "Лего");
-    readQueue(MyBox);//выводим
-    cout << endl;
-    deleteQueue(MyBox);//удаляем элемент
-    readQueue(MyBox);
-    cout << endl;
-    */
-}
-
 
 
 
